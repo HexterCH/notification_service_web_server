@@ -7,7 +7,6 @@ import (
 )
 
 func main() {
-  // redis port
   redisPort, err := redis.Dial("tcp", ":4000")
 
 	if err != nil {
@@ -16,11 +15,10 @@ func main() {
 
 	defer redisPort.Close()
 
-	// notification api
 	router := gin.Default()
 
-	router.GET("/notification", func(c *gin.Context) {
-    message := c.Query("message")
+	router.POST("/notification", func(c *gin.Context) {
+    message := c.PostForm("message")
     if message != "" {
       value := fmt.Sprintf("{\"class\":\"notifier\",\"args\":[\"%s\"]}", message)
       redisPort.Do("RPUSH", "resque:queue:slack",  value)
@@ -34,5 +32,5 @@ func main() {
     }
 	})
 
-	router.Run() // listen and serve on 0.0.0.0:8080
+	router.Run()
 }
